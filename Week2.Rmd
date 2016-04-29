@@ -242,7 +242,11 @@ this data frame as `sfo_feb_flights`. How many flights meet these criteria?
 
 ```{r sfo-feb-flights}
 # type your code for Question 1 here, and Knit
+sfo_feb_flights <- nycflights %>%
+        filter(dest=="SFO", month==2)
+nrow(sfo_feb_flights)
 
+# 68
 ```
 
 
@@ -258,6 +262,18 @@ delays of `sfo_feb_flights`. Which of the following is false?
 
 ```{r sfo-feb-flights-arrival-delays}
 # type your code for Question 2 here, and Knit
+
+ggplot(data=sfo_feb_flights,aes(x=arr_delay)) +
+        geom_histogram()
+
+
+
+
+sfo_feb_flights %>%
+  summarise(mean = mean(arr_delay), max=max(arr_delay), median(arr_delay),n = n())
+
+#<li> No flight is delayed more than 2 hours. </li>  false
+
 
 ```
 
@@ -288,7 +304,11 @@ IQR of arrival delays?
 
 ```{r sfo-feb-flights-arrival-delays-carrier}
 # type your code for Question 3 here, and Knit
+sfo_feb_flights %>%
+        group_by(carrier) %>%
+        summarise(median(arr_delay),IQR(arr_delay))
 
+#UA and DL
 ```
 
 ### Departure delays over months
@@ -322,7 +342,11 @@ nycflights %>%
 
 ```{r highest-avg-dep-delay-month}
 # type your code for Question 4 here, and Knit
-
+nycflights %>%
+        group_by(month) %>%
+        summarise(mean_dd=mean(dep_delay)) %>%
+        arrange(desc(mean_dd))
+# 7
 ```
 
 
@@ -337,7 +361,11 @@ nycflights %>%
 
 ```{r highest-median-dep-delay-month}
 # type your code for Question 5 here, and Knit
-
+nycflights %>%
+        group_by(month) %>%
+        summarise(median_dd=median(dep_delay)) %>%
+        arrange(desc(median_dd))
+#12
 ```
 
 
@@ -419,8 +447,13 @@ which NYC airport would you choose to fly out of?
 
 ```{r on-time-dep-perc-airport}
 # type your code for Question 7 here, and Knit
-
+nycflights %>%
+        group_by(origin) %>%
+        summarise(ontime_rate = sum(dep_type=="on time")/n()) %>%
+        arrange(desc(ontime_rate))
+#LGA
 ```
+
 
 We can also visualize the distribution of on on time departure rate across 
 the three airports using a segmented bar plot.
@@ -448,7 +481,11 @@ Google this tail number to find out more about the aircraft.
 
 ```{r fastest-avg-speed-tailnum}
 # type your code for Question 8 here, and Knit
-
+nycflights %>%
+        mutate(avg_speed=distance/(air_time/60)) %>%
+        arrange(desc(avg_speed)) %>%
+        select(avg_speed,tailnum)
+#N666DN
 ```
 
 
@@ -464,7 +501,10 @@ about the relationship between average speed and distance.
 
 ```{r avg-speed-dist-scatter}
 # type your code for Question 9 here, and Knit
-
+nycflights %>%
+        mutate(avg_speed=distance/(air_time/60)) %>%       
+        ggplot(aes(y=avg_speed,x=distance)) +
+        geom_point()
 ```
 
 
@@ -478,5 +518,15 @@ were `"delayed"` departing arrive `"on time"`?
 
 ```{r on-time-arr-perc}
 # type your code for Question 10 here, and Knit
+nycflights <- nycflights %>%
+        mutate(arr_type =ifelse(arr_delay<=0,"on time","delayed"))
 
+nycflights %>%
+        group_by(dep_type) %>%
+        summarise(sum(arr_type=="on time")/n())
+
+#    dep_type sum(arr_type == "on time")/n()
+#    (chr)                          (dbl)
+#1  delayed                      0.1833639
+#2  on time                      0.7762241     
 ```
